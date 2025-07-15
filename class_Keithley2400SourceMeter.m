@@ -30,10 +30,11 @@ classdef class_Keithley2400SourceMeter < handle
             writeline(SMU.GPIB_device, '*RST'); % restore GPIB defaults
             writeline(SMU.GPIB_device, 'SOUR:CLE:AUTO ON'); % enable auto-output-off
             writeline(SMU.GPIB_device, 'SOUR:CLE:AUTO:MODE TCO'); % set auto-output-off when trigger count expires
-            writeline(SMU.GPIB_device, 'SENS:CONC:ALL'); % set concurrent voltage, current, and resistance sensing
-            writeline(SMU.GPIB_device, 'FORM:ELEM, VOLT, CURR, RES, TIME, STAT'); % format data response, including timestamps and status info
+            writeline(SMU.GPIB_device, 'FUNC "VOLT", "CURR"'); % set concurrent voltage, current, and resistance sensing
+            writeline(SMU.GPIB_device, 'FORM:ELEM VOLT, CURR, TIME, STAT'); % format data response, including timestamps and status info
             SMU.num_pts = str2double(writeread(SMU.GPIB_device, 'TRAC:POIN? MAX')); % query maximum allowable buffer size
             writeline(SMU.GPIB_device, append('TRAC:POIN ', num2str(SMU.num_pts))); % set buffer size to maximum allowable
+            % writeline(SMU.GPIB_device, append('TRIG:COUN ', num2str(SMU.num_pts))); % set trigger count to maximum allowable (with arm count = 1)
         end
 
         function clear_error(SMU)
@@ -42,6 +43,8 @@ classdef class_Keithley2400SourceMeter < handle
 
         function abort(SMU)
             writeline(SMU.GPIB_device, 'ABOR'); % go idle
+            writeline(SMU.GPIB_device, 'OUTP:STAT OFF'); % switch output off
+            writeline(SMU.GPIB_device, 'TRIG:CLE');  % clear pending triggers
         end
 
         function set_source_const(SMU, type, level)
