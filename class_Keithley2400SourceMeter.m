@@ -22,7 +22,8 @@ classdef class_Keithley2400SourceMeter < handle
         end
 
         function delete(SMU)
-            delete(SMU.GPIB_device);
+            writeline(SMU.GPIB_device, 'GTL'); % go to local control
+            delete(SMU.GPIB_device); % close VISA device connection
         end
 
         function restore_default(SMU)
