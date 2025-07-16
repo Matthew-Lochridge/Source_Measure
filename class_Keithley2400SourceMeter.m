@@ -13,6 +13,7 @@ classdef class_Keithley2400SourceMeter < handle
         source_start {mustBeNumeric}
         source_stop {mustBeNumeric}
         sweep_direction
+        raw_data
         data = struct();
     end
 
@@ -100,9 +101,33 @@ classdef class_Keithley2400SourceMeter < handle
             SMU.sweep_direction = direction;
         end
 
-        function data = trigger(SMU)
+        function [fig, ax1, ax2, ax3] = measure(SMU)
             writeline(SMU.GPIB_device, 'READ?');
-            data = str2double(split(readline(SMU.GPIB_device), ','));
+            SMU.raw_data = cell(5,SMU.num_pts);
+            fig = tiledlayout(3,1);
+            ax1 = nexttile;
+            ylabel('Current (mA)');
+            hold on
+            ax2 = nexttile;
+            ylabel('Resistance (k\Omega)');
+            hold on
+            ax3 = nexttile;
+            xlabel('Voltage (V)');
+            ylabel('Time (ms)');
+            hold on
+            linkaxes(ax1,ax2,ax3,'x');
+            for pt = 1:SMU.num_pts
+                SMU.raw_data{:,pt} = split(readline(SMU.GPIB_device), ',');
+                SMU.data.volt = str2double(SMU.raw_data{1,pt});
+                SMU.data.curr = str2double(SMU.raw_data{2,pt});
+                SMU.data.res = str2double(SMU.raw_data{3,pt});
+                SMU.data.time = str2double(SMU.raw_data{4,pt});
+                SMU.data.stat = SMU.raw_data{5,pt};
+                plot(ax1, SMU.data.volt, 1e3*SMU.data.curr);
+                plot(ax2, SMU.data.volt, 1e-3*SMU.data.res);
+                plot(ax3, SMU.data.volt, 1e3*SMU.data.time);
+                drawnow
+            end
         end
     end
 end
