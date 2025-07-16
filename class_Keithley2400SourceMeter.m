@@ -101,33 +101,49 @@ classdef class_Keithley2400SourceMeter < handle
             SMU.sweep_direction = direction;
         end
 
-        function [fig, ax1, ax2, ax3] = measure(SMU)
+        function measure(SMU)
+            SMU.raw_data = zeros(5,SMU.num_pts);
             writeline(SMU.GPIB_device, 'READ?');
-            SMU.raw_data = cell(5,SMU.num_pts);
-            fig = tiledlayout(3,1);
-            ax1 = nexttile;
-            ylabel('Current (mA)');
-            hold on
-            ax2 = nexttile;
-            ylabel('Resistance (k\Omega)');
-            hold on
-            ax3 = nexttile;
-            xlabel('Voltage (V)');
-            ylabel('Time (ms)');
-            hold on
-            linkaxes(ax1,ax2,ax3,'x');
-            for pt = 1:SMU.num_pts
-                SMU.raw_data{:,pt} = split(readline(SMU.GPIB_device), ',');
-                SMU.data.volt = str2double(SMU.raw_data{1,pt});
-                SMU.data.curr = str2double(SMU.raw_data{2,pt});
-                SMU.data.res = str2double(SMU.raw_data{3,pt});
-                SMU.data.time = str2double(SMU.raw_data{4,pt});
-                SMU.data.stat = SMU.raw_data{5,pt};
-                plot(ax1, SMU.data.volt, 1e3*SMU.data.curr);
-                plot(ax2, SMU.data.volt, 1e-3*SMU.data.res);
-                plot(ax3, SMU.data.volt, 1e3*SMU.data.time);
-                drawnow
-            end
+            SMU.raw_data = str2double(split(readline(SMU.GPIB_device), ','));
+            SMU.data.volt = SMU.raw_data(1:5:SMU.num_pts-4);
+            SMU.data.curr = SMU.raw_data(2:5:SMU.num_pts-3);
+            SMU.data.res = SMU.raw_data(3:5:SMU.num_pts-2);
+            SMU.data.time = SMU.raw_data(4:5:SMU.num_pts-1);
+            SMU.data.stat = SMU.raw_data(5:5:SMU.num_pts);
         end
+
+        function plot_Vsrc(SMU)
+            fig = figure();
+            tiledlayout(fig, 1,3);
+            ax1 = nexttile;
+            plot(ax1, SMU.data.curr, SMU.data.volt);
+            xlabel('Current (A)');
+            ylabel('Voltage (V)');
+            ax2 = nexttile;
+            plot(ax2, SMU.data.res, SMU.data.volt);
+            xlabel('Resistance (\Omega)');
+            ax3 = nexttile;
+            plot(ax3, SMU.data.time, SMU.data.volt);
+            xlabel('Time (s)');
+            linkaxes([ax1,ax2,ax3],'y');
+        end
+
+        function plot_Isrc(SMU)
+            fig = figure();
+            tiledlayout(fig, 1,3);
+            ax1 = nexttile;
+            plot(ax1, SMU.data.volt, SMU.data.curr);
+            xlabel('Voltage (V)');
+            ylabel('Current (A)');
+            ax2 = nexttile;
+            plot(ax2, SMU.data.res, SMU.data.curr);
+            xlabel('Resistance (\Omega)');
+            ax3 = nexttile;
+            plot(ax3, SMU.data.time, SMU.data.curr);
+            xlabel('Time (s)');
+            linkaxes([ax1,ax2,ax3],'y');
+        end
+
+        
     end
 end
