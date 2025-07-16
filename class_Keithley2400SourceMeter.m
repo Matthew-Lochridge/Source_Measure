@@ -30,11 +30,9 @@ classdef class_Keithley2400SourceMeter < handle
             writeline(SMU.GPIB_device, '*RST'); % restore GPIB defaults
             writeline(SMU.GPIB_device, 'SOUR:CLE:AUTO ON'); % enable auto-output-off
             writeline(SMU.GPIB_device, 'SOUR:CLE:AUTO:MODE TCO'); % set auto-output-off when trigger count expires
-            writeline(SMU.GPIB_device, 'FUNC "VOLT", "CURR"'); % set concurrent voltage, current, and resistance sensing
-            writeline(SMU.GPIB_device, 'FORM:ELEM VOLT, CURR, TIME, STAT'); % format data response, including timestamps and status info
-            SMU.num_pts = str2double(writeread(SMU.GPIB_device, 'TRAC:POIN? MAX')); % query maximum allowable buffer size
-            writeline(SMU.GPIB_device, append('TRAC:POIN ', num2str(SMU.num_pts))); % set buffer size to maximum allowable
-            % writeline(SMU.GPIB_device, append('TRIG:COUN ', num2str(SMU.num_pts))); % set trigger count to maximum allowable (with arm count = 1)
+            writeline(SMU.GPIB_device, 'FUNC "VOLT", "CURR", "RES"'); % set concurrent voltage, current, and resistance sensing
+            writeline(SMU.GPIB_device, 'SENS:RES:MODE MAN'); % set ohms mode to manual
+            writeline(SMU.GPIB_device, 'FORM:ELEM VOLT, CURR, RES, TIME, STAT'); % format data response, including timestamps and status info
         end
 
         function clear_error(SMU)
@@ -47,6 +45,13 @@ classdef class_Keithley2400SourceMeter < handle
             writeline(SMU.GPIB_device, 'TRIG:CLE');  % clear pending triggers
         end
 
+        function set_num_pts(SMU, num_pts)
+            SMU.num_pts = num_pts;
+            writeline(SMU.GPIB_device, append('TRAC:POIN ', num2str(SMU.num_pts))); % set buffer size
+            writeline(SMU.GPIB_device, 'ARM:COUN 1'); % set arm count to 1
+            writeline(SMU.GPIB_device, append('TRIG:COUN ', num2str(SMU.num_pts))); % set trigger count to match buffer size
+        end
+
         function set_source_const(SMU, type, level)
             switch type
                 case 'V'
@@ -55,7 +60,7 @@ classdef class_Keithley2400SourceMeter < handle
                     writeline(SMU.GPIB_device, append('SOUR:VOLT:TRIG ', num2str(level))); % set source level when triggered
                     SMU.source_type = 'Voltage';
                 case 'I'
-                    writeline(SMU.GPIB_device, 'SOUR:FUNC CURR'); % set source functino to current
+                    writeline(SMU.GPIB_device, 'SOUR:FUNC CURR'); % set source function to current
                     writeline(SMU.GPIB_device, 'SOUR:CURR:MODE FIX'); % set source mode to fixed
                     writeline(SMU.GPIB_device, append('SOUR:CURR:TRIG ', num2str(level))); % set source level when triggered
                     SMU.source_type = 'Current';
@@ -70,7 +75,7 @@ classdef class_Keithley2400SourceMeter < handle
             switch type
                 case 'V'
                     writeline(SMU.GPIB_device, 'SOUR:FUNC VOLT'); % set source function to voltage
-                    writeline(SMU.GPIB_device, 'SOUR:VOLT:MODE SWE'); % set sourc emode to sweep
+                    writeline(SMU.GPIB_device, 'SOUR:VOLT:MODE SWE'); % set source mode to sweep
                     writeline(SMU.GPIB_device, append('SOUR:VOLT:STAR ', num2str(lower_limit))); % set source start level
                     writeline(SMU.GPIB_device, append('SOUR:VOLT:STOP ', num2str(upper_limit))); % set source stop level
                     SMU.source_type = 'Voltage';
