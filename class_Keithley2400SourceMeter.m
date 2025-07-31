@@ -48,9 +48,9 @@ classdef class_Keithley2400SourceMeter < handle
 
         function set_num_pts(SMU, num_pts)
             SMU.num_pts = num_pts;
-            writeline(SMU.GPIB_device, append('TRAC:POIN ', num2str(SMU.num_pts))); % set buffer size
+            writeline(SMU.GPIB_device, append('TRAC:POIN ', num2str(SMU.num_pts))); % set buffer size (max 2500)
             writeline(SMU.GPIB_device, 'ARM:COUN 1'); % set arm count to 1
-            writeline(SMU.GPIB_device, append('TRIG:COUN ', num2str(SMU.num_pts))); % set trigger count to match buffer size
+            writeline(SMU.GPIB_device, append('TRIG:COUN ', num2str(SMU.num_pts))); % set trigger count to match buffer size (trigger count * arm count <= 2500)
         end
 
         function set_source_const(SMU, type, level)
@@ -114,34 +114,34 @@ classdef class_Keithley2400SourceMeter < handle
 
         function plot_Vsrc(SMU)
             fig = figure();
-            tiledlayout(fig, 1,3);
+            tiledlayout(fig, 3, 1);
             ax1 = nexttile;
             plot(ax1, SMU.data.curr, SMU.data.volt);
-            xlabel('Current (A)');
-            ylabel('Voltage (V)');
+            ylabel('Current (A)');
             ax2 = nexttile;
             plot(ax2, SMU.data.res, SMU.data.volt);
-            xlabel('Resistance (\Omega)');
+            ylabel('Resistance (\Omega)');
             ax3 = nexttile;
             plot(ax3, SMU.data.time, SMU.data.volt);
-            xlabel('Time (s)');
-            linkaxes([ax1,ax2,ax3],'y');
+            xlabel('Voltage (V)');
+            ylabel('Time (s)');
+            linkaxes([ax1,ax2,ax3],'x');
         end
 
         function plot_Isrc(SMU)
             fig = figure();
-            tiledlayout(fig, 1,3);
+            tiledlayout(fig, 3, 1);
             ax1 = nexttile;
             plot(ax1, SMU.data.volt, SMU.data.curr);
-            xlabel('Voltage (V)');
-            ylabel('Current (A)');
+            ylabel('Voltage (V)');
             ax2 = nexttile;
             plot(ax2, SMU.data.res, SMU.data.curr);
-            xlabel('Resistance (\Omega)');
+            ylabel('Resistance (\Omega)');
             ax3 = nexttile;
             plot(ax3, SMU.data.time, SMU.data.curr);
-            xlabel('Time (s)');
-            linkaxes([ax1,ax2,ax3],'y');
+            xlabel('Current (A)');
+            ylabel('Time (s)');
+            linkaxes([ax1,ax2,ax3],'x');
         end
 
         
