@@ -23,7 +23,7 @@ classdef class_Keithley2400SourceMeter < handle
         end
 
         function delete(SMU)
-            writeline(SMU.GPIB_device, 'GTL'); % go to local control
+            % writeline(SMU.GPIB_device, 'GTL'); % go to local control
             delete(SMU.GPIB_device); % close VISA device connection
         end
 
@@ -108,37 +108,37 @@ classdef class_Keithley2400SourceMeter < handle
             SMU.data.volt = SMU.raw_data(1:5:SMU.num_pts-4);
             SMU.data.curr = SMU.raw_data(2:5:SMU.num_pts-3);
             SMU.data.res = SMU.raw_data(3:5:SMU.num_pts-2);
-            SMU.data.time = SMU.raw_data(4:5:SMU.num_pts-1);
+            SMU.data.time = SMU.raw_data(4:5:SMU.num_pts-1)-SMU.raw_data(4);
             SMU.data.stat = SMU.raw_data(5:5:SMU.num_pts);
         end
 
-        function plot_Vsrc(SMU)
+        function fig = plot_Vsrc(SMU)
             fig = figure();
             tiledlayout(fig, 3, 1);
             ax1 = nexttile;
-            plot(ax1, SMU.data.curr, SMU.data.volt);
+            plot(ax1, SMU.data.volt, SMU.data.curr);
             ylabel('Current (A)');
             ax2 = nexttile;
-            plot(ax2, SMU.data.res, SMU.data.volt);
+            plot(ax2, SMU.data.volt, SMU.data.res);
             ylabel('Resistance (\Omega)');
             ax3 = nexttile;
-            plot(ax3, SMU.data.time, SMU.data.volt);
+            plot(ax3, SMU.data.volt, SMU.data.time);
             xlabel('Voltage (V)');
             ylabel('Time (s)');
             linkaxes([ax1,ax2,ax3],'x');
         end
 
-        function plot_Isrc(SMU)
+        function fig = plot_Isrc(SMU)
             fig = figure();
             tiledlayout(fig, 3, 1);
             ax1 = nexttile;
-            plot(ax1, SMU.data.volt, SMU.data.curr);
+            plot(ax1, SMU.data.curr, SMU.data.volt);
             ylabel('Voltage (V)');
             ax2 = nexttile;
-            plot(ax2, SMU.data.res, SMU.data.curr);
+            plot(ax2, SMU.data.curr, SMU.data.res);
             ylabel('Resistance (\Omega)');
             ax3 = nexttile;
-            plot(ax3, SMU.data.time, SMU.data.curr);
+            plot(ax3, SMU.data.curr, SMU.data.time);
             xlabel('Current (A)');
             ylabel('Time (s)');
             linkaxes([ax1,ax2,ax3],'x');
