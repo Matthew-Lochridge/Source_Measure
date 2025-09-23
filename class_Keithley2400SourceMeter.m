@@ -46,6 +46,10 @@ classdef class_Keithley2400SourceMeter < handle
             writeline(SMU.GPIB_device, 'TRIG:CLE');  % clear pending triggers
         end
 
+        function reset_time(SMU)
+            writeline(SMU.GPIB_device, 'SYST:TIME:RES'); % reset time to zero
+        end
+
         function set_num_pts(SMU, num_pts)
             SMU.num_pts = num_pts;
             writeline(SMU.GPIB_device, append('TRAC:POIN ', num2str(SMU.num_pts))); % set buffer size (max 2500)
@@ -100,6 +104,8 @@ classdef class_Keithley2400SourceMeter < handle
             SMU.source_stop = upper_limit;
             SMU.sweep_direction = direction;
         end
+
+        
 
         function measure(SMU)
             SMU.raw_data = zeros(5,SMU.num_pts);

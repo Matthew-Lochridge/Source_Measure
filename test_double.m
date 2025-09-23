@@ -2,11 +2,14 @@ GPIB_addr = [10, 25];
 
 num_pts = 50;
 
-V_gate = 0.1;
+V_measure = 0;
 
 V_start = 0;
 V_stop = 0.1;
-dir = 'Up';
+
+if isempty(gcp('nocreate'))
+    parpool(length(GPIB_addr));
+end
 
 spmd
 
@@ -23,7 +26,16 @@ spmd
     end
 
     spmdBarrier;
+
+    tic
+    SMU.reset_time();
+    toc
+
+    spmdBarrier;
+
+    tic
     SMU.measure();
+    toc
 
     volt = SMU.data.volt;
     curr = SMU.data.curr;
